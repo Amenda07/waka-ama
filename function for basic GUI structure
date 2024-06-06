@@ -1,0 +1,26 @@
+import tkinter as tk
+
+# main menu
+def show_main_menu():
+    for widget in window.winfo_children():
+        widget.pack_forget()
+    
+    label = tk.Label(window, text="Enter Year:")
+    label.pack(pady=10)
+
+    entry = tk.Entry(window)
+    entry.pack(pady=5)
+
+    button_process = tk.Button(window, text="Process Files")
+    button_process.pack(pady=20)
+    
+    button_help = tk.Button(window, text="Help/Instructions")
+    button_help.pack(pady=5)
+
+#  GUI window
+window = tk.Tk()
+window.title("Regional Points Calculator")
+
+show_main_menu()
+
+window.mainloop()
