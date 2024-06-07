@@ -1,0 +1,49 @@
+import tkinter as tk
+from tkinter import messagebox
+
+def process_input_year(entry):
+    year = entry.get()
+    if not year.isdigit() and int(year) < 0:  
+        messagebox.showerror("Invalid Input", "Please enter a valid year.")
+        return
+
+    print(f"Processing files for year {year}")
+
+# help instructions
+def show_help():
+    for widget in window.winfo_children():
+        widget.pack_forget()
+
+    help_text = """
+HELP/INSTRUCTIONS
+  
+    """
+    label_help = tk.Label(window, text=help_text, justify=tk.LEFT )
+    label_help.pack(pady=10, padx=10)
+    
+    button_return = tk.Button(window, text="Return")
+    button_return.pack(pady=20)
+
+# main menu
+def show_main_menu():
+    for widget in window.winfo_children():
+        widget.pack_forget()
+        
+    label = tk.Label(window, text="Enter Year:" )
+    label.pack(pady=10)
+
+    entry = tk.Entry(window)
+    entry.pack(pady=5)
+
+    button_process = tk.Button(window, text="Process Files", command=lambda: process_input_year(entry))
+    button_process.pack(pady=20)
+    
+    button_help = tk.Button(window, text="Help/Instructions", command=show_help)
+    button_help.pack(pady=5)
+
+# GUI window
+window = tk.Tk()
+window.title("Regional Points Calculator")
+
+show_main_menu()
+window.mainloop()
