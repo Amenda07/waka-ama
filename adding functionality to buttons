@@ -16,6 +16,18 @@ def show_help():
 
     help_text = """
 HELP/INSTRUCTIONS
+
+The Waka Ama ranker is a program that reads the files 
+in the Waka Ama competitions database and processes 
+it to calculate the total number of points earned by each team. 
+Accoring to the points collected they are ranked. 
+for example the team withh greatest points is ranked first position.
+
+To find the results of the year required, type the year in the entry box. 
+Once you enter the year, click on the process files. 
+A CSV file for example, named 2017_results.csv (or the year you entered) is created. 
+The CSV file is opened using the systems default application for CSV files.
+Click on the return button to go back to the main window.
   
     """
     label_help = tk.Label(window, text=help_text, justify=tk.LEFT )
