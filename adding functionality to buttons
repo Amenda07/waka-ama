@@ -31,7 +31,7 @@ Click on the return button to go back to the main window.
   
     """
     label_help = tk.Label(window, text=help_text, justify=tk.LEFT )
-    label_help.pack(pady=10, padx=10)
+    label_help.pack(pady=20, padx=20)
     
     button_return = tk.Button(window, text="Return")
     button_return.pack(pady=20)
@@ -42,16 +42,16 @@ def show_main_menu():
         widget.pack_forget()
         
     label = tk.Label(window, text="Enter Year:" )
-    label.pack(pady=10)
+    label.pack(pady=15)
 
     entry = tk.Entry(window)
-    entry.pack(pady=5)
+    entry.pack(pady=5, padx=10)
 
     button_process = tk.Button(window, text="Process Files", command=lambda: process_input_year(entry))
-    button_process.pack(pady=20)
+    button_process.pack(pady=10)
     
     button_help = tk.Button(window, text="Help/Instructions", command=show_help)
-    button_help.pack(pady=5)
+    button_help.pack(pady=10)
 
 # GUI window
 window = tk.Tk()
