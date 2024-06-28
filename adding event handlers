@@ -1,6 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 import csv
+import os
+import platform
+import subprocess
 
 # Points system function
 def points_system(place):
@@ -27,6 +30,52 @@ def process_single_file(file_path):
             points = points_system(int(place))
             regional_points[regional_association] = regional_points.get(regional_association, 0) + points
     return regional_points
+
+def process_files_in_directory(directory):
+    regional_points = {}
+    for file in os.listdir(directory):
+        if 'Final' in file:
+            file_path = os.path.join(directory, file)
+            file_points = process_single_file(file_path)
+            for region, points in file_points.items():
+                regional_points[region] = regional_points.get(region, 0) + points
+    return regional_points
+
+def write_results_to_csv(year, regional_points):
+    results_file = f'{year}_results.csv'
+    with open(results_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["Regional association", "Points"])
+        for association, points in sorted(regional_points.items(), key=lambda item: item[1], reverse=True):
+            writer.writerow([association, points])
+    return results_file
+
+
+def open_results_file(results_file):
+    if platform.system() == 'Darwin':  # macOS
+        subprocess.call(('open', results_file))
+    elif platform.system() == 'Windows':  # Windows
+        os.startfile(results_file)
+    else:  # Linux variants
+        subprocess.call(('xdg-open', results_file))
+
+def process_files(year):
+    if not os.path.isdir(year):
+        print(f"The folder for the year {year} does not exist.")
+        return
+
+    print(f'Analysing folder: {year}, Number of files: {len([file for file in os.listdir(year) if "Final" in file])}')
+    
+    try:
+        regional_points = process_files_in_directory(year)
+        if not regional_points:
+            print("No points data processed.")
+            return
+
+        results_file = write_results_to_csv(year, regional_points)
+        open_results_file(results_file)
+    except Exception as e:
+        print(f"Error processing files: {e}")
 
 
 #process input year
