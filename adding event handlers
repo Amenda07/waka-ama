@@ -45,11 +45,13 @@ def write_results_to_csv(year, regional_points):
     results_file = f'{year}_results.csv'
     with open(results_file, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["Regional association", "Points"])
-        for association, points in sorted(regional_points.items(), key=lambda item: item[1], reverse=True):
-            writer.writerow([association, points])
-    return results_file
+        writer.writerow(["Rank", "Regional association", "Points"])
 
+        rank=1
+        for association, points in sorted(regional_points.items(), key=lambda item: item[1], reverse=True):
+            writer.writerow([rank, association, points])
+            rank += 1
+    return results_file
 
 def open_results_file(results_file):
     if platform.system() == 'Darwin':  # macOS
