@@ -59,15 +59,15 @@ def open_results_file(results_file):
     else:  # Linux variants
         subprocess.call(('xdg-open', results_file))
 
-def process_files(year):
-    if not os.path.isdir(year):
-        print(f"The folder for the year {year} does not exist.")
+def process_files(year, directory):
+    if not os.path.isdir(directory):
+        print(f"The folder for the year {directory} does not exist.")
         return
 
-    print(f'Analysing folder: {year}, Number of files: {len([file for file in os.listdir(year) if "Final" in file])}')
+    print(f'Analysing folder: {directory}, Number of files: {len([file for file in os.listdir(directory) if "Final" in file])}')
     
     try:
-        regional_points = process_files_in_directory(year)
+        regional_points = process_files_in_directory(directory)
         if not regional_points:
             print("No points data processed.")
             return
@@ -76,7 +76,6 @@ def process_files(year):
         open_results_file(results_file)
     except Exception as e:
         print(f"Error processing files: {e}")
-
 
 #process input year
 def process_input_year(entry):
