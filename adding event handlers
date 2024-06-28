@@ -15,7 +15,7 @@ def read_csv_file(file_path):
         try:
             with open(file_path, 'r', encoding=enc) as f:
                 reader = csv.reader(f)
-                return reader  
+                return list(reader)  
         except UnicodeDecodeError:
             continue
     raise ValueError(f"Unable to read the file {file_path} with tried encodings.")
