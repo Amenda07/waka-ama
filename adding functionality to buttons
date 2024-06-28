@@ -3,7 +3,7 @@ from tkinter import messagebox
 
 def process_input_year(entry):
     year = entry.get()
-    if not int(year) > 2100 or int(year) < 2017:  
+    if not year.isdigit() or int(year) > 2100 or int(year) < 2017:  
         messagebox.showerror("Invalid Input", "Please enter a valid year.")
         return
 
