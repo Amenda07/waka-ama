@@ -28,7 +28,9 @@ def process_single_file(file_path):
         place = row[2]
         if place not in ['DQ', 'DNS']:
             points = points_system(int(place))
-            regional_points[regional_association] = regional_points.get(regional_association, 0) + points
+            regions = regional_association.split('/')  
+            for region in regions:
+                regional_points[region.strip()] = regional_points.get(region.strip(), 0) + points
     return regional_points
 
 def process_files_in_directory(directory):
