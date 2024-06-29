@@ -68,6 +68,19 @@ def write_results_to_csv(year, regional_points):
     print(f'Results written to {results_file}')
     return results_file
 
+def display_results(sorted_points, year):
+    print(f"\nWaka Ama New Zealand Club Points Trophy - {year} Results")
+    print("Rank | Regional Association | Points")
+    print("-------------------------------------")
+    rank = 1
+    previous_points = None
+    
+    for idx, (association, points) in enumerate(sorted_points):
+        if points != previous_points:
+            rank = idx + 1
+        print(f"{rank} | {association} | {points}")
+        previous_points = points
+
 def open_results_file(results_file):
     if platform.system() == 'Darwin':  # macOS
         subprocess.call(('open', results_file))
@@ -89,7 +102,9 @@ def process_files(year, directory):
             print("No points data processed.")
             return
 
+        sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
         results_file = write_results_to_csv(year, regional_points)
+        display_results(sorted_points, year)
         open_results_file(results_file)
     except Exception as e:
         print(f"Error processing files: {e}")
