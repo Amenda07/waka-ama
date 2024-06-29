@@ -45,12 +45,25 @@ def write_results_to_csv(year, regional_points):
     results_file = f'{year}_results.csv'
     with open(results_file, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(["Rank", "Regional association", "Points"])
-
-        rank=1
-        for association, points in sorted(regional_points.items(), key=lambda item: item[1], reverse=True):
+        title = f"Waka Ama New Zealand Club Points Trophy - {year} Results"
+        writer.writerow([title])  
+        writer.writerow([]) 
+        
+        writer.writerow(["Rank", "Regional Association", "Points"])
+        sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
+        
+        rank = 1
+        previous_points = None
+        
+        for idx, (association, points) in enumerate(sorted_points):
+            if points != previous_points:
+                rank = idx 
+            
             writer.writerow([rank, association, points])
-            rank += 1
+            
+            previous_points = points
+            
+    print(f'Results written to {results_file}')
     return results_file
 
 def open_results_file(results_file):
