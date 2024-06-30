@@ -93,6 +93,9 @@ def process_files(year, directory):
     if not os.path.isdir(directory):
         print(f"The folder for the year {directory} does not exist.")
         return
+    if not os.listdir(directory):
+        messagebox.showerror("Empty Directory", "The selected folder is empty.")
+        return
 
     print(f'Analysing folder: {directory}, Number of files: {len([file for file in os.listdir(directory) if "Final" in file])}')
     
