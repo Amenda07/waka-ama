@@ -42,44 +42,45 @@ def process_files_in_directory(directory):
             for region, points in file_points.items():
                 regional_points[region] = regional_points.get(region, 0) + points
     return regional_points
-
 def write_results_to_csv(year, regional_points):
     results_file = f'{year}_results.csv'
     with open(results_file, 'w', newline='') as f:
         writer = csv.writer(f)
         title = f"Waka Ama New Zealand Club Points Trophy - {year} Results"
-        writer.writerow([title])  
-        writer.writerow([]) 
-        
+        writer.writerow([title])
+        writer.writerow([])
+
         writer.writerow(["Rank", "Regional Association", "Points"])
         sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
-        
-        rank = 1
+
+        rank = 0
         previous_points = None
-        
+
         for idx, (association, points) in enumerate(sorted_points):
             if points != previous_points:
-                rank = idx 
-            
-            writer.writerow([rank, association, points])
-            
+                rank = idx
+            if rank != 0:  
+                writer.writerow([rank, association, points])
             previous_points = points
-            
+
     print(f'Results written to {results_file}')
     return results_file
+
 
 def display_results(sorted_points, year):
     print(f"\nWaka Ama New Zealand Club Points Trophy - {year} Results")
     print("Rank | Regional Association | Points")
     print("-------------------------------------")
-    rank = 1
+    rank = 0
     previous_points = None
-    
+
     for idx, (association, points) in enumerate(sorted_points):
         if points != previous_points:
-            rank = idx + 1
-        print(f"{rank} | {association} | {points}")
+            rank = idx
+        if rank != 0:  
+            print(f"{rank} | {association} | {points}")
         previous_points = points
+
 
 def open_results_file(results_file):
     if platform.system() == 'Darwin':  # macOS
