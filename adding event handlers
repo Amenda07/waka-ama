@@ -42,6 +42,7 @@ def process_files_in_directory(directory):
             for region, points in file_points.items():
                 regional_points[region] = regional_points.get(region, 0) + points
     return regional_points
+
 def write_results_to_csv(year, regional_points):
     results_file = f'{year}_results.csv'
     with open(results_file, 'w', newline='') as f:
