@@ -4,22 +4,24 @@ import csv
 import os
 import platform
 import subprocess
-
+from tkinter import filedialog
+ 
 # Points system function
 def points_system(place):
-    return {1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1}.get(place, 0)
-
+    return {1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1}.get(place, 1)
+ 
 def read_csv_file(file_path):
     encodings = ['utf-8', 'latin1', 'iso-8859-1']
     for enc in encodings:
         try:
             with open(file_path, 'r', encoding=enc) as f:
                 reader = csv.reader(f)
-                return list(reader)  
+                return list (reader)
         except UnicodeDecodeError:
             continue
     raise ValueError(f"Unable to read the file {file_path} with tried encodings.")
-
+ 
+ 
 def process_single_file(file_path):
     rows = read_csv_file(file_path)
     regional_points = {}
@@ -32,7 +34,8 @@ def process_single_file(file_path):
             for region in regions:
                 regional_points[region.strip()] = regional_points.get(region.strip(), 0) + points
     return regional_points
-
+ 
+ 
 def process_files_in_directory(directory):
     regional_points = {}
     for file in os.listdir(directory):
@@ -42,47 +45,46 @@ def process_files_in_directory(directory):
             for region, points in file_points.items():
                 regional_points[region] = regional_points.get(region, 0) + points
     return regional_points
-
+ 
 def write_results_to_csv(year, regional_points):
     results_file = f'{year}_results.csv'
     with open(results_file, 'w', newline='') as f:
         writer = csv.writer(f)
         title = f"Waka Ama New Zealand Club Points Trophy - {year} Results"
-        writer.writerow([title])
+        writer.writerow([title])  
         writer.writerow([])
-
+        
         writer.writerow(["Rank", "Regional Association", "Points"])
         sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
-
-        rank = 0
+        
+        rank = 1
         previous_points = None
-
+        
         for idx, (association, points) in enumerate(sorted_points):
             if points != previous_points:
                 rank = idx
-            if rank != 0:  
-                writer.writerow([rank, association, points])
+            
+            writer.writerow([rank, association, points])
+            
             previous_points = points
-
+            
     print(f'Results written to {results_file}')
     return results_file
-
-
+ 
 def display_results(sorted_points, year):
     print(f"\nWaka Ama New Zealand Club Points Trophy - {year} Results")
     print("Rank | Regional Association | Points")
     print("-------------------------------------")
-    rank = 0
+    rank = 1
     previous_points = None
-
+    
     for idx, (association, points) in enumerate(sorted_points):
         if points != previous_points:
-            rank = idx
-        if rank != 0:  
-            print(f"{rank} | {association} | {points}")
+            rank = idx + 1
+        print(f"{rank} | {association} | {points}")
         previous_points = points
-
-
+ 
+ 
 def open_results_file(results_file):
     if platform.system() == 'Darwin':  # macOS
         subprocess.call(('open', results_file))
@@ -90,15 +92,12 @@ def open_results_file(results_file):
         os.startfile(results_file)
     else:  # Linux variants
         subprocess.call(('xdg-open', results_file))
-
+ 
 def process_files(year, directory):
     if not os.path.isdir(directory):
         print(f"The folder for the year {directory} does not exist.")
         return
-    if not os.listdir(directory):
-        messagebox.showerror("Empty Directory", "The selected folder is empty.")
-        return
-
+ 
     print(f'Analysing folder: {directory}, Number of files: {len([file for file in os.listdir(directory) if "Final" in file])}')
     
     try:
@@ -106,41 +105,46 @@ def process_files(year, directory):
         if not regional_points:
             print("No points data processed.")
             return
-
+ 
         sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
         results_file = write_results_to_csv(year, regional_points)
         display_results(sorted_points, year)
         open_results_file(results_file)
     except Exception as e:
         print(f"Error processing files: {e}")
-
+ 
+ 
 #process input year
 def process_input_year(entry):
-    year = entry.get() 
-    if int(year) > 2100 or int(year) <2017:  
+    year = entry.get()
+    if not year.isdigit() or int(year) > 2100 or int(year) <2017:  
         messagebox.showerror("Invalid Input", "Please enter a valid year.")
         return
     else:
-        print(f"Processing files for year {year}")
-
-
+        directory = filedialog.askdirectory(title="Select Folder")
+        if directory:
+            process_files(year, directory)
+        else:
+            messagebox.showerror("No Folder Selected", "Please select a folder to process.")
+ 
+ 
 # help instructions
 def show_help():   
     for widget in window.winfo_children():
         widget.pack_forget()
-
+ 
     help_text = """
 HELP/INSTRUCTIONS
-
-The Waka Ama ranker is a program that reads the files 
-in the Waka Ama competitions database and processes 
-it to calculate the total number of points earned by each team. 
-Accoring to the points collected they are ranked. 
+ 
+The Waka Ama ranker is a program that reads the files
+in the Waka Ama competitions database and processes
+it to calculate the total number of points earned by each team.
+Accoring to the points collected they are ranked.
 for example the team withh greatest points is ranked first position.
-
-To find the results of the year required, type the year in the entry box. 
-Once you enter the year, click on the process files. 
-A CSV file for example, named 2017_results.csv (or the year you entered) is created. 
+ 
+To find the results of the year required, type the year in the entry box.
+Once you enter the year, click on the process files.
+A CSV file for example, named 2017_results.csv (or the year you entered) is created.
 The CSV file is opened using the systems default application for CSV files.
 Click on the return button to go back to the main window.
     
@@ -148,10 +152,10 @@ Click on the return button to go back to the main window.
     label_help = tk.Label(window, text=help_text, justify=tk.LEFT, bg="lightyellow")
     label_help.pack(pady=20, padx=20)
     
-
+ 
     button_return = tk.Button(window, text="Return", command=show_main_menu)
     button_return.pack(pady=20)
-
+ 
 # main menu
 def show_main_menu():
     for widget in window.winfo_children():
@@ -159,20 +163,20 @@ def show_main_menu():
         
     label = tk.Label(window, text="Enter Year:" )
     label.pack(pady=15)
-
+ 
     entry = tk.Entry(window)
     entry.pack(pady=5, padx=10)
-
+ 
     button_process = tk.Button(window, text="Process Files", command=lambda: process_input_year(entry))
     button_process.pack(pady=10)
     
     button_help = tk.Button(window, text="Help/Instructions", command=show_help)
     button_help.pack(pady=10)
-
+ 
 # GUI window
 window = tk.Tk()
 window.title("Regional Points Calculator")
-
+ 
 show_main_menu()
 window.mainloop()
 
