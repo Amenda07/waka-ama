@@ -27,7 +27,7 @@ def process_single_file(file_path):
     regional_points = {}
     for row in rows:
         regional_association = row[5]
-        place = row[2]
+        place = row[0]
         if place not in ['DQ', 'DNS']:
             points = points_system(int(place))
             regions = regional_association.split('/')  
