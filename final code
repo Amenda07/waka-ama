@@ -1,0 +1,245 @@
+import os
+import csv
+import subprocess
+import platform
+import tkinter as tk
+from tkinter import messagebox, filedialog
+
+#global dictionary to store the custom points 
+custom_points = {1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1}
+
+# Points system function
+def points_system(place):
+    return custom_points.get(place, 1)
+
+
+def read_csv_file(file_path):
+    encodings = ['utf-8', 'latin1', 'iso-8859-1']
+    for enc in encodings:
+        try:
+            with open(file_path, 'r', encoding=enc) as f:
+                reader = csv.reader(f)
+                return list(reader)
+        except UnicodeDecodeError:
+            continue
+    raise ValueError(f"Unable to read the file {file_path} with tried encodings.")
+
+def process_single_file(file_path):
+    rows = read_csv_file(file_path)
+    regional_points = {}
+    for row in rows[1:]:
+        regional_association = row[5]
+        place = row[0]
+        if place not in ['DQ', 'DNS']:
+            points = points_system(int(place))
+            regions = regional_association.split('/')  
+            for region in regions:
+                regional_points[region.strip()] = regional_points.get(region.strip(), 0) + points
+    return regional_points
+
+def process_files_in_directory(directory):
+    regional_points = {}
+    for file in os.listdir(directory):
+        if 'Final' in file:
+            file_path = os.path.join(directory, file)
+            print(f'Analysing file: {file_path}')
+            try:
+                file_points = process_single_file(file_path)
+                for region, points in file_points.items():
+                    regional_points[region] = regional_points.get(region, 0) + points
+            except Exception as e:
+                print(f"Error processing file {file_path}: {e}")
+    return regional_points
+
+def write_results_to_csv(year, regional_points):
+    results_file = f'{year}_results.csv'
+    with open(results_file, 'w', newline='') as f:
+        writer = csv.writer(f)
+        title = f"Waka Ama New Zealand Club Points Trophy - {year} Results"
+        writer.writerow([title])
+        writer.writerow([])
+        writer.writerow(["Rank", "Regional Association", "Points"])
+        
+        sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
+        rank = 1
+        previous_points = None
+        
+        for idx, (association, points) in enumerate(sorted_points):
+            if points != previous_points:
+                rank = idx + 1
+            
+            if rank == 0:
+                continue
+            
+            writer.writerow([rank, association, points])
+            previous_points = points
+            
+    print(f'Results written to {results_file}')
+    return results_file
+
+def display_results(sorted_points, year):
+    top = tk.Toplevel(window)
+    top.title(f"Results for {year}")
+    top.geometry("400x400")
+
+    label = tk.Label(top, text=f"Waka Ama New Zealand Club Points Trophy - {year} Results", font=("Helvetica", 16))
+    label.pack(pady=10)
+
+    frame = tk.Frame(top)
+    frame.pack(pady=10)
+
+    text = tk.Text(frame, wrap="none", width=50, height=20)
+    text.pack(side="left", fill="y")
+
+    scrollbar = tk.Scrollbar(frame, orient="vertical", command=text.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    text.config(yscrollcommand=scrollbar.set)
+
+    text.insert("end", "Rank | Regional Association | Points\n")
+    text.insert("end", "-" * 36 + "\n")
+
+    rank = 1
+    previous_points = None
+
+    for idx, (association, points) in enumerate(sorted_points):
+        if points != previous_points:
+            rank = idx + 1
+        text.insert("end", f"{rank} | {association} | {points}\n")
+        previous_points = points
+
+    text.config(state="disabled")
+
+    export_button = tk.Button(top, text="Export to CSV", command=lambda: export_results_to_csv(year, sorted_points))
+    export_button.pack(pady=10)
+
+def export_results_to_csv(year, sorted_points):
+    regional_points = {association: points for rank, (association, points) in enumerate(sorted_points, 1)}
+    results_file = write_results_to_csv(year, regional_points)
+    open_results_file(results_file)
+
+def open_results_file(results_file):
+    if platform.system() == 'Darwin':  # macOS
+        subprocess.call(('open', results_file))
+    elif platform.system() == 'Windows':  # Windows
+        os.startfile(results_file)
+    else:  # Linux variants
+        subprocess.call(('xdg-open', results_file))
+
+def process_files(year, directory):
+    if not os.path.isdir(directory):
+        print(f"The folder for the year {directory} does not exist.")
+        return
+
+    files = [file for file in os.listdir(directory) if 'Final' in file]
+    print(f"Analysing folder: {directory}, Number of files: {len(files)}")
+
+    loading_label.config(text=f"Processing year: {year}, Number of files: {len(files)}")
+    window.update_idletasks()
+    try:
+        regional_points = process_files_in_directory(directory)
+        if not regional_points:
+            print("No points data processed.")
+            loading_label.config(text="No points data processed.")
+            return
+
+        sorted_points = sorted(regional_points.items(), key=lambda item: item[1], reverse=True)
+        
+        # Display results before exporting to CSV
+        display_results(sorted_points, year)
+        loading_label.config(text="Processing complete.")
+    except Exception as e:
+        print(f"Error processing files: {e}")
+        loading_label.config(text=f"Error: {e}")
+
+def process_input_year(entry):
+    year = entry.get()
+    if not year.isdigit() or int(year) > 2100 or int(year) < 2017:  
+        messagebox.showerror("Invalid Input", "Please enter a valid year.")
+        return
+    else:
+        directory = filedialog.askdirectory(title="Select Folder")
+        if directory:
+            process_files(year, directory)
+        else:
+            messagebox.showerror("No Folder Selected", "Please select a folder to process.")
+
+def show_help():   
+    for widget in window.winfo_children():
+        widget.pack_forget()
+
+    help_text = """
+HELP/INSTRUCTIONS
+
+The Waka Ama ranker is a program that reads the files
+in the Waka Ama competitions database and processes
+it to calculate the total number of points earned by each team.
+Accoring to the points collected they are ranked.
+for example the team withh greatest points is ranked first position.
+
+To find the results of the year required, type the year in the entry box.
+Once you enter the year, click on the process files.
+A CSV file for example, named 2017_results.csv (or the year you entered) is created.
+The CSV file is opened using the systems default application for CSV files.
+Click on the return button to go back to the main window.
+    
+    """
+    label_help = tk.Label(window, text=help_text, justify=tk.LEFT, bg="lightyellow")
+    label_help.pack(pady=20, padx=20)
+    
+    button_return = tk.Button(window, text="Return", command=show_main_menu)
+    button_return.pack(pady=20)
+
+def show_main_menu():
+    for widget in window.winfo_children():
+        widget.pack_forget()
+    
+    label = tk.Label(window, text="Enter Year:")
+    label.pack(pady=15)
+    
+    global loading_label
+    loading_label = tk.Label(window, text="", fg="blue")
+    loading_label.pack(pady=5)
+
+    entry = tk.Entry(window)
+    entry.pack(pady=5, padx=10)
+
+    button_process = tk.Button(window, text="Process Files", command=lambda: process_input_year(entry))
+    button_process.pack(pady=10)
+    
+    button_help = tk.Button(window, text="Help/Instructions", command=show_help)
+    button_help.pack(pady=10)
+
+def show_settings():
+    settings_window = tk.Toplevel(window)
+    settings_window.title("Settings")
+    settings_window.geometry("300x400")
+
+    labels = {}
+    entries = {}
+
+    for place in range(1, 9):
+        labels[place] = tk.Label(settings_window, text=f"Points for place {place}:")
+        labels[place].pack(pady=5)
+        entries[place] = tk.Entry(settings_window)
+        entries[place].pack(pady=5)
+        entries[place].insert(0, str(custom_points.get(place, 1)))
+
+    def save_settings():
+        for place in range(1, 9):
+            try:
+                custom_points[place] = int(entries[place].get())
+            except ValueError:
+                messagebox.showerror("Invalid Input", f"Please enter a valid integer for place {place}.")
+                return
+        settings_window.destroy()
+
+    save_button = tk.Button(settings_window, text="Save", command=save_settings)
+    save_button.pack(pady=20)
+
+# GUI window
+window = tk.Tk()
+window.title("Regional Points Calculator")
+
+show_main_menu()
+window.mainloop()
